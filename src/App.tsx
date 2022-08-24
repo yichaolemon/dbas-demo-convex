@@ -71,6 +71,19 @@ const ListMigrationJobs = () => {
     }, 1000)
   }, [currentTime]);
 
+  const styleState = (state: string) => {
+    if (state == "Scheduled") {
+      return {background: "#8f9c99"}
+    }
+    if (state == "Failed") {
+      return {background: "#d4442a"}
+    }
+    if (state == "Completed") {
+      return {background: "#30b027"}
+    }
+    return {background: "#85c0de"}
+  }
+
   if (!allScheduledJobs) {
     return null;
   }
@@ -99,7 +112,7 @@ const ListMigrationJobs = () => {
             <td>{job.isRollback ? "rollback" : "migrate"}</td>
             <td>{new Date(job.scheduledTime).toLocaleString()}</td>
             <td>{job.startedAt ? new Date(job.startedAt).toLocaleString() : ""}</td>
-            <td>{`${job.state} ${jobToRunningInMinutes(job.startedAt, job.finishedAt)}`}</td>
+            <td><p style={styleState(job.state)}>{job.state}</p>{`${jobToRunningInMinutes(job.startedAt, job.finishedAt)}`}</td>
             <td>{job.type}</td>
           </tr>
           )

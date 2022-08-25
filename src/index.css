@@ -30,5 +30,6 @@ main {
 
 td {
   border: 0.5px solid gray;
-  padding: 1em;
+  padding: 0.5em;
+  line-height: 20px;
 }

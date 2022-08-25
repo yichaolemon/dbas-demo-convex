@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { replicationInfo } from "./constants";
 import startRunningJob from "../convex/startRunningJob";
 import { Id } from "../convex/_generated/dataModel";
+import React from 'react'
+import Select from 'react-select'
 
 
 const SubmitMigration = () => {
@@ -14,6 +16,10 @@ const SubmitMigration = () => {
 
   const selectedInfo = replicationInfo.filter((info) => info.id === replicationId)[0];
   const [migrationJobId, setMigrationJobId] = useState(selectedInfo.migration_job_ids[0]);
+
+  const replicationIdOptions = replicationInfo.map((info) => {
+    return { value: info.id, label: info.id }
+  })
 
   function submitSelectedJob() {
     // Execute the Convex function `incrementCounter` as a mutation
@@ -31,19 +37,43 @@ const SubmitMigration = () => {
       <p><strong>Source</strong>: {selectedInfo.sourceId}</p>
       <p><strong>Target</strong>: {selectedInfo.targetId}</p>
       <p><strong>Type</strong>: {selectedInfo.type}. <strong>Is Bucket</strong>: {selectedInfo.isBucket ? "true" : "false"}</p>
-      <select value={replicationId} onChange={(e) => setReplicationId(e.target.value)}>
-        {replicationInfo.map((info) =>
-        <option key={info.id} value={info.id}>{info.id}</option>
-        )}
-      </select>
-      <p>Migration job id:&nbsp;
-      <select value={migrationJobId} onChange={(e) => setMigrationJobId(+e.target.value)}>
-        {selectedInfo.migration_job_ids.map((id) =>
-        <option key={id} value={id}>{id}</option>
-        )}
-      </select>
+      <p>
+        <strong>Replication Id:&nbsp;</strong>
+        {/* <select value={replicationId} onChange={(e) => setReplicationId(e.target.value)}>
+          {replicationInfo.map((info) =>
+          <option key={info.id} value={info.id}>{info.id}</option>
+          )}
+        </select> */}
+        <Select
+          defaultValue={{value: replicationId, label: replicationId}}
+          options={replicationInfo.map((info) => {
+            return { value: info.id, label: info.id }
+          })}
+          onChange={(newValue, _) => {
+            setMigrationJobId(replicationInfo.filter((info) => info.id === newValue?.value)[0].migration_job_ids[0])
+            setReplicationId(newValue?.value)
+          }}
+        />
       </p>
-      <p>Rollback: <input type="checkbox" checked={isRollback} onChange={(e) => setIsRollback(e.target.checked)} /></p>
+      <p>
+        <strong>Migration job id:&nbsp;</strong>
+        {/* <select value={migrationJobId} onChange={(e) => setMigrationJobId(+e.target.value)}>
+          {selectedInfo.migration_job_ids.map((id) =>
+          <option key={id} value={id}>{id}</option>
+          )}
+        </select> */}
+        <Select
+          // defaultValue={{value: migrationJobId, label: migrationJobId}}
+          value={{value: migrationJobId, label: migrationJobId}}
+          options={selectedInfo.migration_job_ids.map((id) => {
+            return {value: id, label: id}
+          })}
+          onChange={(newValue, _) => {
+            setMigrationJobId(+(newValue?.value))
+          }}
+        />
+      </p>
+      <p><strong>Rollback: </strong><input type="checkbox" checked={isRollback} onChange={(e) => setIsRollback(e.target.checked)} /></p>
       <p>Scheduled time (millis since epoch) <input type="text" placeholder="leave blank to run now" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} /></p>
       <button onClick={submitSelectedJob}>Submit Job!</button>
     </div>

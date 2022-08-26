@@ -18,10 +18,6 @@ const SubmitMigration = () => {
   const selectedInfo = replicationInfo.filter((info) => info.id === replicationId)[0];
   const [migrationJobId, setMigrationJobId] = useState(selectedInfo.migration_job_ids[0]);
 
-  const replicationIdOptions = replicationInfo.map((info) => {
-    return { value: info.id, label: info.id }
-  })
-
   async function submitSelectedJob() {
     // Execute the Convex function `incrementCounter` as a mutation
     // that updates the counter value.
@@ -69,7 +65,7 @@ const SubmitMigration = () => {
             if (newValue === null) {
               return
             }
-            setMigrationJobId(+(newValue?.value))
+            setMigrationJobId(newValue.value)
           }}
         />
       </p>
@@ -105,9 +101,15 @@ const SearchMigrationJobs = () => {
 }
 
 const ListMigrationJobs = () => {
-  const allScheduledJobs = useQuery('getMigrationJobs');
   const submitMigrationJob = useMutation("submitMigrationJob");
   const finishRunningJob = useMutation("finishRunningJob");
+
+  const [replicationId, setReplicationId] = useState("");
+  // const selectedInfo = replicationInfo.filter((info) => info.id === replicationId)[0];
+  // const [migrationJobId, setMigrationJobId] = useState(selectedInfo.migration_job_ids[0]);
+  // const [migrationJobId, setMigrationJobId] = useState("");
+
+  const allScheduledJobs = useQuery('getMigrationJobs', replicationId, null);
 
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
 
@@ -169,6 +171,38 @@ const ListMigrationJobs = () => {
   return (
     <div>
       <h3 style={{color: "#72bcd4"}}>All jobs:</h3>
+      <p>
+        <strong>Replication Id:&nbsp;</strong>
+        <Select
+          defaultValue={{value: replicationId, label: replicationId}}
+          options={replicationInfo.map((info) => {
+            return { value: info.id, label: info.id }
+          })}
+          onChange={(newValue, _) => {
+            if (newValue === null) {
+              return
+            }
+            // setMigrationJobId(replicationInfo.filter((info) => info.id === newValue.value)[0].migration_job_ids[0])
+            setReplicationId(newValue.value)
+          }}
+        />
+      </p>
+      {/* <p>
+        <strong>Migration job id:&nbsp;</strong>
+        <Select
+          // defaultValue={{value: migrationJobId, label: migrationJobId}}
+          value={{value: migrationJobId, label: migrationJobId}}
+          options={selectedInfo.migration_job_ids.map((id) => {
+            return {value: id, label: id}
+          })}
+          onChange={(newValue, _) => {
+            if (newValue === null) {
+              return
+            }
+            setMigrationJobId(newValue.value)
+          }}
+        />
+      </p> */}
       <table>
         <thead>
         <tr>
@@ -210,7 +244,7 @@ const MockRunMigrationJobs = () => {
 
   return (
     <div>
-      <h3 style={{color: "#72bcd4"}}>Mock run your job:</h3>
+      <h3 style={{color: "#72bcd4"}}>Mock run your job: (Testing only!!!)</h3>
       <p>Click on one of the buttons at a time:</p>
       <p>uuid: <input type="text" placeholder="UUID of a job to mock" value={jobUuid} onChange={(e) => setJobUuid(e.target.value)}></input>
       &nbsp;&nbsp;&nbsp;&nbsp;

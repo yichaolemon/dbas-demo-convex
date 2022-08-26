@@ -4,13 +4,13 @@ export const replicationInfo = [
     sourceId: "koreacentral-dev-acl-primary",
     targetId: "koreacentral-dev-acl-flex",
     migration_job_ids: [
-      11223,
-      87373,
-      87324,
-      98823,
-      23842,
-      29735,
-      90923,
+      "11223",
+      "87373",
+      "87324",
+      "98823",
+      "23842",
+      "29735",
+      "90923"
     ],
     localDbName: "acl",
     type: "flex",
@@ -21,12 +21,12 @@ export const replicationInfo = [
     sourceId: "westus-dev-acl-primary",
     targetId: "westus-dev-acl-tidb",
     migration_job_ids: [
-      2348,
-      2347,
-      2837,
-      8787,
-      2655,
-      7677
+      "2348",
+      "2347",
+      "2837",
+      "8787",
+      "2655",
+      "7677"
     ],
     localDbName: "acl",
     type: "tidb",
@@ -37,12 +37,12 @@ export const replicationInfo = [
     sourceId: "eastus-staging-deltapipelines-primary",
     targetId: "eastus-staging-deltapipelines-flex",
     migration_job_ids: [
-      23,
-      25,
-      20,
-      18,
-      94,
-      48
+      "23",
+      "25",
+      "20",
+      "18",
+      "94",
+      "48"
     ],
     localDbName: "deltapipelines",
     type: "flex",
@@ -53,10 +53,10 @@ export const replicationInfo = [
     sourceId: "westeurope-prod-sessions-primary",
     targetId: "westeurope-prod-sessions-tidb",
     migration_job_ids: [
-      298492,
-      866348,
-      234755,
-      872731
+      "298492",
+      "866348",
+      "234755",
+      "872731"
     ],
     localDbName: "sessions",
     type: "tidb",
@@ -67,10 +67,10 @@ export const replicationInfo = [
     sourceId: "southasia-prod-ngrok-primary",
     targetId: "southasia-prod-ngrok-tidb",
     migration_job_ids: [
-      5459,
-      35281,
-      85669,
-      40550
+      "5459",
+      "35281",
+      "85669",
+      "40550"
     ],
     localDbName: "ngrok",
     type: "tidb",

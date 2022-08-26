@@ -3,7 +3,7 @@ import { defineSchema, defineTable, s } from "convex/schema";
 export default defineSchema({
   migration_jobs: defineTable({
     replicationId: s.string(),
-    migrationJobId: s.number(),
+    migrationJobId: s.string(),
     migrationJobIdType: s.string(),
     state: s.string(),
     type: s.string(),

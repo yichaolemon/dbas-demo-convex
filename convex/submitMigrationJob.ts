@@ -3,7 +3,7 @@ import { Id } from "./_generated/dataModel";
 
 export default mutation(async ({ db }, 
   replicationId: string,
-  migrationJobId: number,
+  migrationJobId: string,
   migrationJobIdType: string,
   type: string,
   isRollback: boolean,

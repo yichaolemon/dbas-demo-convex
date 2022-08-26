@@ -80,10 +80,16 @@ const SubmitMigration = () => {
   );
 };
 
+const SearchResult = ({jobUuid}: {jobUuid: string}) => {
+  const migrationJobById = useQuery('getMigrationJobById', new Id("migration_jobs", jobUuid));
+  return (
+    <textarea value={JSON.stringify(migrationJobById, null, 2)} />
+  )
+}
+
 const SearchMigrationJobs = () => {
   const [jobUuid, setJobUuid] = useState("");
-  const [jobJson, setJobJsonA] = useState("");
-  // const getMigrationJobById = useQuery('getMigrationJobById', new Id("migration_jobs", jobUuid));
+  const [searchedJobUuid, setSearchedJobUuid] = useState("");
 
   return (
     <div>
@@ -91,9 +97,8 @@ const SearchMigrationJobs = () => {
       <h3 style={{color: "#72bcd4"}}>Search your migration jobs:</h3>
       uuid: <input type="text" placeholder="UUID of a job to search" value={jobUuid} onChange={(e) => setJobUuid(e.target.value)}></input>
       &nbsp;&nbsp;&nbsp;&nbsp;
-      <button>Search!</button>
-      <br/>
-      <textarea value={jobJson} />
+      <button onClick={() => setSearchedJobUuid(jobUuid)}>Search!</button>
+      {searchedJobUuid ? <SearchResult jobUuid={searchedJobUuid}/> : null}
       </p>
     </div>
   )

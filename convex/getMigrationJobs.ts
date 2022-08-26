@@ -1,7 +1,7 @@
 import { query } from "./_generated/server";
 import { Document } from "./_generated/dataModel";
 
-// Running < Scheduled < Completed < Failed
+// Running < Scheduled < Completed < Failed < Cancelled
 const compState = (a: string, b: string): number => {
   if (a == b) {
     return 0;

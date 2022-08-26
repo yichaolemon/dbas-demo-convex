@@ -59,3 +59,11 @@ export const replicationInfo = [
     isBucket: true
   }
 ];
+
+export const migrationJobStates = new Map([
+  ["Scheduled", ["Running", "Cancelled"]],
+  ["Running", ["Succeeded", "Failed"]],
+  ["Succeeded", []],
+  ["Failed", []],
+  ["Cancelled", []]
+])

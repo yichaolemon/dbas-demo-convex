@@ -2,7 +2,7 @@ import { useQuery, useMutation } from "../convex/_generated/react";
 import { useEffect, useState } from "react";
 import { replicationInfo } from "./constants";
 import startRunningJob from "../convex/startRunningJob";
-import { Id } from "../convex/_generated/dataModel";
+import { Id, Document } from "../convex/_generated/dataModel";
 import React from 'react'
 import Select from 'react-select'
 
@@ -39,11 +39,6 @@ const SubmitMigration = () => {
       <p><strong>Type</strong>: {selectedInfo.type}. <strong>Is Bucket</strong>: {selectedInfo.isBucket ? "true" : "false"}</p>
       <p>
         <strong>Replication Id:&nbsp;</strong>
-        {/* <select value={replicationId} onChange={(e) => setReplicationId(e.target.value)}>
-          {replicationInfo.map((info) =>
-          <option key={info.id} value={info.id}>{info.id}</option>
-          )}
-        </select> */}
         <Select
           defaultValue={{value: replicationId, label: replicationId}}
           options={replicationInfo.map((info) => {
@@ -60,11 +55,6 @@ const SubmitMigration = () => {
       </p>
       <p>
         <strong>Migration job id:&nbsp;</strong>
-        {/* <select value={migrationJobId} onChange={(e) => setMigrationJobId(+e.target.value)}>
-          {selectedInfo.migration_job_ids.map((id) =>
-          <option key={id} value={id}>{id}</option>
-          )}
-        </select> */}
         <Select
           // defaultValue={{value: migrationJobId, label: migrationJobId}}
           value={{value: migrationJobId, label: migrationJobId}}
@@ -86,8 +76,18 @@ const SubmitMigration = () => {
   );
 };
 
+const SearchMigrationJobs = () => {
+  return (
+    <div>
+      <h3 style={{color: "#72bcd4"}}>Search your migration jobs:</h3>
+    </div>
+  )
+}
+
 const ListMigrationJobs = () => {
   const allScheduledJobs = useQuery('getMigrationJobs');
+  const submitMigrationJob = useMutation("submitMigrationJob");
+  const finishRunningJob = useMutation("finishRunningJob");
 
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
 
@@ -108,20 +108,42 @@ const ListMigrationJobs = () => {
   }, [currentTime]);
 
   const styleState = (state: string) => {
-    if (state == "Scheduled") {
-      return {background: "#8f9c99"}
+    switch (state) {
+      case "Cancelled":
+      case "Scheduled": return { background: "#8f9c99" }
+      case "Failed": return { background: "#d4442a" }
+      case "Succeeded": return { background: "#30b027" }
+      case "Running": return { background: "#85c0de" }
+      default: {}
     }
-    if (state == "Failed") {
-      return {background: "#d4442a"}
-    }
-    if (state == "Completed") {
-      return {background: "#30b027"}
-    }
-    return {background: "#85c0de"}
   }
 
   if (!allScheduledJobs) {
     return null;
+  }
+
+  const getButtons = (job: Document<"migration_jobs">) => {
+    switch (job.state) {
+      case "Running": {
+        return <div></div>
+      }
+      case "Failed": {
+        return <div>
+          <button onClick={() =>
+            submitMigrationJob(job.replicationId, job.migrationJobId, job.isBucket, job.isRollback, new Date().getTime(), job.type)}
+          >Resubmit</button>
+        </div>
+      }
+      case "Scheduled": {
+        return <div>
+          <button onClick={() =>
+            finishRunningJob(job._id, "Cancelled")}>Cancel</button>
+        </div>
+      }
+      default: {
+        return <div></div>
+      }
+    }
   }
 
   return (
@@ -137,6 +159,7 @@ const ListMigrationJobs = () => {
           <th>started at</th>
           <th>state</th>
           <th>type</th>
+          <th>action</th>
         </tr>
         </thead>
         <tbody>
@@ -150,6 +173,7 @@ const ListMigrationJobs = () => {
             <td>{job.startedAt ? new Date(job.startedAt).toLocaleString() : ""}</td>
             <td><p style={styleState(job.state)}>{job.state}</p>{`${jobToRunningInMinutes(job.startedAt, job.finishedAt)}`}</td>
             <td>{job.type}</td>
+            <td>{getButtons(job)}</td>
           </tr>
           )
         }
@@ -164,33 +188,23 @@ const MockRunMigrationJobs = () => {
   const startRunningJob = useMutation("startRunningJob");
   const finishRunningJob = useMutation("finishRunningJob");
 
-  function submitRunningJob() {
-    startRunningJob(new Id("migration_jobs", jobUuid));
-  }
-
-  function submitFinishJob(failed: boolean) {
-    finishRunningJob(new Id("migration_jobs", jobUuid), failed);
-  }
-
   return (
     <div>
       <h3 style={{color: "#72bcd4"}}>Mock run your job:</h3>
       <p>Click on one of the buttons at a time:</p>
       <p>uuid: <input type="text" placeholder="type in the UUID of a job" value={jobUuid} onChange={(e) => setJobUuid(e.target.value)}></input>
       &nbsp;&nbsp;&nbsp;&nbsp;
-      <button onClick={submitRunningJob}>Start Running Job!</button>
+      <button onClick={() => startRunningJob(new Id("migration_jobs", jobUuid))}>Start Running Job!</button>
       &nbsp;&nbsp;&nbsp;&nbsp;
-      <button onClick={() => submitFinishJob(false)}>Complete a Running Job!</button>
+      <button onClick={() => finishRunningJob(new Id("migration_jobs", jobUuid), "Succeeded")}>Complete a Running Job!</button>
       &nbsp;&nbsp;&nbsp;&nbsp;
-      <button onClick={() => submitFinishJob(true)}>Fail a Running Job!</button>
+      <button onClick={() => finishRunningJob(new Id("migration_jobs", jobUuid), "Failed")}>Fail a Running Job!</button>
       </p>
     </div>
   )
 }
 
 export default function App() {
-  // // Watch the results of the Convex function `getCounter`.
-  // const counter = useQuery("getCounter") ?? 0;
 
   return (
     <main>
@@ -198,8 +212,9 @@ export default function App() {
       <br/>
       <MockRunMigrationJobs />
       <br/>
+      <SearchMigrationJobs />
+      <br/>
       <ListMigrationJobs />
     </main>
   );
 }
-// replication_id -> Array<(migration_job_id,is_bucket)>

@@ -104,12 +104,11 @@ const ListMigrationJobs = () => {
   const submitMigrationJob = useMutation("submitMigrationJob");
   const finishRunningJob = useMutation("finishRunningJob");
 
-  const [replicationId, setReplicationId] = useState("");
-  // const selectedInfo = replicationInfo.filter((info) => info.id === replicationId)[0];
-  // const [migrationJobId, setMigrationJobId] = useState(selectedInfo.migration_job_ids[0]);
-  // const [migrationJobId, setMigrationJobId] = useState("");
+  const [replicationId, setReplicationId] = useState("ALL");
+  const selectedInfo = (replicationId === "ALL") ? null : replicationInfo.filter((info) => info.id === replicationId)[0];
+  const [migrationJobId, setMigrationJobId] = useState("ALL");
 
-  const allScheduledJobs = useQuery('getMigrationJobs', replicationId, null);
+  const allScheduledJobs = useQuery('getMigrationJobs', replicationId, migrationJobId);
 
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
 
@@ -175,26 +174,31 @@ const ListMigrationJobs = () => {
         <strong>Replication Id:&nbsp;</strong>
         <Select
           defaultValue={{value: replicationId, label: replicationId}}
-          options={replicationInfo.map((info) => {
-            return { value: info.id, label: info.id }
-          })}
+          options={[{ value: "ALL", label: "ALL" }]
+            .concat(replicationInfo.map((info) => {
+              return { value: info.id, label: info.id }
+            }))}
           onChange={(newValue, _) => {
             if (newValue === null) {
               return
             }
-            // setMigrationJobId(replicationInfo.filter((info) => info.id === newValue.value)[0].migration_job_ids[0])
             setReplicationId(newValue.value)
+            setMigrationJobId("ALL")
+            // setMigrationJobId(replicationInfo.filter((info) => info.id === newValue.value)[0].migration_job_ids[0])
           }}
         />
       </p>
-      {/* <p>
+      <p>
         <strong>Migration job id:&nbsp;</strong>
         <Select
           // defaultValue={{value: migrationJobId, label: migrationJobId}}
           value={{value: migrationJobId, label: migrationJobId}}
-          options={selectedInfo.migration_job_ids.map((id) => {
-            return {value: id, label: id}
-          })}
+          options={
+            (selectedInfo === null) ? [] :
+              [{ value: "ALL", label: "ALL" }].concat(
+                selectedInfo.migration_job_ids.map((id) => {
+                  return { value: id, label: id }
+                }))}
           onChange={(newValue, _) => {
             if (newValue === null) {
               return
@@ -202,7 +206,7 @@ const ListMigrationJobs = () => {
             setMigrationJobId(newValue.value)
           }}
         />
-      </p> */}
+      </p>
       <table>
         <thead>
         <tr>

@@ -24,10 +24,10 @@ const compState = (a: string, b: string): number => {
 
 export default query(async ({ db }, replicationId: string|null, migrationJobId: string|null): Promise<Document<"migration_jobs">[]> => {
   let queryBuilder: any = db.table("migration_jobs")
-  if (replicationId !== null && replicationId.length > 0) {
+  if (replicationId !== null && replicationId !== "ALL" && replicationId.length > 0) {
     queryBuilder = queryBuilder.filter((q: any) => q.eq(q.field("replicationId"), replicationId))
   }
-  if (migrationJobId !== null && migrationJobId.length > 0) {
+  if (migrationJobId !== null && migrationJobId !== "ALL" && migrationJobId.length > 0) {
     queryBuilder = queryBuilder.filter((q: any) => q.eq(q.field("migrationJobId"), migrationJobId))
   }
   const docs = await queryBuilder.collect()

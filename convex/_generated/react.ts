@@ -10,6 +10,7 @@
  */
 
 import type finishRunningJob from "../finishRunningJob";
+import type getMigrationJobById from "../getMigrationJobById";
 import type getMigrationJobs from "../getMigrationJobs";
 import type startRunningJob from "../startRunningJob";
 import type submitMigrationJob from "../submitMigrationJob";
@@ -27,6 +28,7 @@ import type { ClientMutation, ClientQuery } from "convex/server";
  */
 export type ConvexAPI = {
   queries: {
+    getMigrationJobById: ClientQuery<typeof getMigrationJobById>;
     getMigrationJobs: ClientQuery<typeof getMigrationJobs>;
   };
   mutations: {

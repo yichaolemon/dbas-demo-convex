@@ -1,12 +1,13 @@
 import { mutation } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 export default mutation(async ({ db }, 
   replicationId: string,
   migrationJobId: number,
-  isBucket: boolean,
+  migrationJobIdType: string,
+  type: string,
   isRollback: boolean,
-  scheduledTime: number,
-  type: string) => {
+  scheduledTime: number) => {
 
   const doc = await db.table("migration_jobs")
     .filter(q => q.and(
@@ -19,15 +20,15 @@ export default mutation(async ({ db },
     throw Error(`Can't schedule duplicate job while existing ${doc._id} is in ${doc.state} state`)
   }
 
-  db.insert("migration_jobs", {
-    replicationId,
-    migrationJobId,
-    isBucket,
-    isRollback,
-    scheduledTime,
-    startedAt: null,
-    finishedAt: null,
+  return db.insert("migration_jobs", {
+    replicationId: replicationId,
+    migrationJobId: migrationJobId,
+    migrationJobIdType: migrationJobIdType,
     state: "Scheduled",
-    type
+    type: type,
+    isRollback: isRollback,
+    scheduledTime: scheduledTime,
+    startedAt: null,
+    finishedAt: null
   });
 });

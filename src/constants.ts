@@ -12,8 +12,9 @@ export const replicationInfo = [
       29735,
       90923,
     ],
+    localDbName: "acl",
     type: "flex",
-    isBucket: false
+    migrationUnit: "BUCKET"
   },
   {
     id: "westus-dev-acl-primary-westus-dev-acl-tidb",
@@ -27,8 +28,9 @@ export const replicationInfo = [
       2655,
       7677
     ],
+    localDbName: "acl",
     type: "tidb",
-    isBucket: false
+    migrationUnit: "WORKSPACE"
   },
   {
     id: "eastus-staging-deltapipelines-primary-eastus-staging-deltapipelines-flex",
@@ -42,8 +44,9 @@ export const replicationInfo = [
       94,
       48
     ],
+    localDbName: "deltapipelines",
     type: "flex",
-    isBucket: false
+    migrationUnit: "WORKSPACE"
   },
   {
     id: "westeurope-prod-sessions-primary-westeurope-prod-sessions-tidb",
@@ -55,8 +58,23 @@ export const replicationInfo = [
       234755,
       872731
     ],
+    localDbName: "sessions",
     type: "tidb",
-    isBucket: true
+    migrationUnit: "BUCKET"
+  },
+  {
+    id: "southasia-prod-ngrok-primary-southasia-prod-ngrok-tidb",
+    sourceId: "southasia-prod-ngrok-primary",
+    targetId: "southasia-prod-ngrok-tidb",
+    migration_job_ids: [
+      5459,
+      35281,
+      85669,
+      40550
+    ],
+    localDbName: "ngrok",
+    type: "tidb",
+    migrationUnit: "BUCKET"
   }
 ];
 
@@ -66,4 +84,15 @@ export const migrationJobStates = new Map([
   ["Succeeded", []],
   ["Failed", []],
   ["Cancelled", []]
-])
+]);
+
+export const migrationJobIdTypes = [
+  "BUCKET",
+  "WORKSPACE",
+  "INSTANCE"
+];
+
+export const migrationJobTypes = [
+  "flex",
+  "tidb"
+];

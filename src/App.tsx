@@ -9,6 +9,7 @@ import Select from 'react-select'
 
 const SubmitMigration = () => {
   const submitMigrationJob = useMutation("submitMigrationJob");
+  const [submittedJobUuid, setSubmittedJobUuid] = useState("");
 
   const [replicationId, setReplicationId] = useState(replicationInfo[0].id);
   const [isRollback, setIsRollback] = useState(false);
@@ -21,22 +22,25 @@ const SubmitMigration = () => {
     return { value: info.id, label: info.id }
   })
 
-  function submitSelectedJob() {
+  async function submitSelectedJob() {
     // Execute the Convex function `incrementCounter` as a mutation
     // that updates the counter value.
     let time = +scheduledTime;
     if (scheduledTime.length === 0) {
       time = new Date().getTime();
     }
-    submitMigrationJob(replicationId, migrationJobId, selectedInfo.isBucket, isRollback, time, selectedInfo.type);
+    let id = await submitMigrationJob(replicationId, migrationJobId, selectedInfo.migrationUnit,
+      selectedInfo.type, isRollback, time);
+
+    setSubmittedJobUuid(id.toString());
   }
 
   return (
     <div>
       <h3 style={{color: "#72bcd4"}}>Submit your migration jobs:</h3>
-      <p><strong>Source</strong>: {selectedInfo.sourceId}</p>
-      <p><strong>Target</strong>: {selectedInfo.targetId}</p>
-      <p><strong>Type</strong>: {selectedInfo.type}. <strong>Is Bucket</strong>: {selectedInfo.isBucket ? "true" : "false"}</p>
+      <p><strong>Logical DB</strong>: {selectedInfo.localDbName}</p>
+      <p><strong>Source Host</strong>: {selectedInfo.sourceId} <strong>Target Host</strong>: {selectedInfo.targetId}</p>
+      <p><strong>Migration Type</strong>: {selectedInfo.type} <strong>Unit</strong>: {selectedInfo.migrationUnit}</p>
       <p>
         <strong>Replication Id:&nbsp;</strong>
         <Select
@@ -71,15 +75,26 @@ const SubmitMigration = () => {
       </p>
       <p><strong>Rollback: </strong><input type="checkbox" checked={isRollback} onChange={(e) => setIsRollback(e.target.checked)} /></p>
       <p>Scheduled time (millis since epoch) <input type="text" placeholder="leave blank to run now" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} /></p>
-      <button onClick={submitSelectedJob}>Submit Job!</button>
+      <button onClick={submitSelectedJob}>Submit Job!</button><p>Job just submitted: {submittedJobUuid}</p>
     </div>
   );
 };
 
 const SearchMigrationJobs = () => {
+  const [jobUuid, setJobUuid] = useState("");
+  const [jobJson, setJobJsonA] = useState("");
+  // const getMigrationJobById = useQuery('getMigrationJobById', new Id("migration_jobs", jobUuid));
+
   return (
     <div>
+      <p>
       <h3 style={{color: "#72bcd4"}}>Search your migration jobs:</h3>
+      uuid: <input type="text" placeholder="UUID of a job to search" value={jobUuid} onChange={(e) => setJobUuid(e.target.value)}></input>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      <button>Search!</button>
+      <br/>
+      <textarea value={jobJson} />
+      </p>
     </div>
   )
 }
@@ -96,9 +111,8 @@ const ListMigrationJobs = () => {
       return ""
     }
     const later = finishedAt == null ? currentTime : finishedAt
-    const diffInMinutes = Math.floor((later - startedAt) / (60 * 1000))
-    const secsRemainder = ((later - startedAt) / 1000 ) % 60
-    return `(${diffInMinutes.toFixed(0)} mins ${secsRemainder.toFixed(0)} secs)`
+    const date = new Date(later - startedAt)
+    return date.toISOString().substring(11, 19)
   }
 
   useEffect(() => {
@@ -130,7 +144,8 @@ const ListMigrationJobs = () => {
       case "Failed": {
         return <div>
           <button onClick={() =>
-            submitMigrationJob(job.replicationId, job.migrationJobId, job.isBucket, job.isRollback, new Date().getTime(), job.type)}
+            submitMigrationJob(job.replicationId, job.migrationJobId, job.migrationJobIdType, job.type,
+              job.isRollback, new Date().getTime())}
           >Resubmit</button>
         </div>
       }
@@ -152,27 +167,27 @@ const ListMigrationJobs = () => {
       <table>
         <thead>
         <tr>
-          <th>uuid</th>
-          <th>migration job id</th>
-          <th>is rollback</th>
-          <th>scheduled time</th>
-          <th>started at</th>
-          <th>state</th>
-          <th>type</th>
-          <th>action</th>
+          <th>ID</th>
+          <th>Type</th>
+          {/* <th>migration job id</th> */}
+          <th>Ready At</th>
+          <th>Started At</th>
+          <th>Finished At</th>
+          <th>State</th>
+          <th>Action</th>
         </tr>
         </thead>
         <tbody>
         {
           allScheduledJobs.map((job) =>
           <tr key={job._id.toString()}>
-            <td>{job._id.toString()}</td>
-            <td>{job.migrationJobId}</td>
-            <td>{job.isRollback ? "rollback" : "migrate"}</td>
+            <td>{job._id.toString()} <br/> <br/>{job.replicationId}</td>
+            <td>{job.type} <br/> {job.isRollback ? "rollback" : "migrate"} <br/> {job.migrationJobIdType}</td>
+            {/* <td>{job.migrationJobId}</td> */}
             <td>{new Date(job.scheduledTime).toLocaleString()}</td>
             <td>{job.startedAt ? new Date(job.startedAt).toLocaleString() : ""}</td>
+            <td>{job.finishedAt ? new Date(job.finishedAt).toLocaleString() : ""}</td>
             <td><p style={styleState(job.state)}>{job.state}</p>{`${jobToRunningInMinutes(job.startedAt, job.finishedAt)}`}</td>
-            <td>{job.type}</td>
             <td>{getButtons(job)}</td>
           </tr>
           )
@@ -192,7 +207,7 @@ const MockRunMigrationJobs = () => {
     <div>
       <h3 style={{color: "#72bcd4"}}>Mock run your job:</h3>
       <p>Click on one of the buttons at a time:</p>
-      <p>uuid: <input type="text" placeholder="type in the UUID of a job" value={jobUuid} onChange={(e) => setJobUuid(e.target.value)}></input>
+      <p>uuid: <input type="text" placeholder="UUID of a job to mock" value={jobUuid} onChange={(e) => setJobUuid(e.target.value)}></input>
       &nbsp;&nbsp;&nbsp;&nbsp;
       <button onClick={() => startRunningJob(new Id("migration_jobs", jobUuid))}>Start Running Job!</button>
       &nbsp;&nbsp;&nbsp;&nbsp;

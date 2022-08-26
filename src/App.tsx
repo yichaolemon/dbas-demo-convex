@@ -50,8 +50,11 @@ const SubmitMigration = () => {
             return { value: info.id, label: info.id }
           })}
           onChange={(newValue, _) => {
-            setMigrationJobId(replicationInfo.filter((info) => info.id === newValue?.value)[0].migration_job_ids[0])
-            setReplicationId(newValue?.value)
+            if (newValue === null) {
+              return
+            }
+            setMigrationJobId(replicationInfo.filter((info) => info.id === newValue.value)[0].migration_job_ids[0])
+            setReplicationId(newValue.value)
           }}
         />
       </p>
@@ -69,6 +72,9 @@ const SubmitMigration = () => {
             return {value: id, label: id}
           })}
           onChange={(newValue, _) => {
+            if (newValue === null) {
+              return
+            }
             setMigrationJobId(+(newValue?.value))
           }}
         />

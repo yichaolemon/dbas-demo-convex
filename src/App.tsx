@@ -107,6 +107,20 @@ const ListMigrationJobs = () => {
   const [migrationJobId, setMigrationJobId] = useState("ALL");
 
   const allScheduledJobs = useQuery('getMigrationJobs', replicationId, migrationJobId);
+  const allIds = allScheduledJobs?.map((doc) => [doc.replicationId, doc.migrationJobId]);
+
+  // id, type, state=not yet running, action: submit
+  const allUnscheduledJobs = [];
+  for (let rinfo of replicationInfo) {
+    for (let mid of rinfo.migration_job_ids ) {
+      if (allIds === undefined) {
+        continue
+      }
+      if (allIds?.filter(([r_id, m_id]) => r_id === rinfo.id && m_id === mid).length === 0) {
+        allUnscheduledJobs.push([rinfo.id, mid, rinfo.migrationUnit, rinfo.type])
+      }
+    }
+  }
 
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
 
@@ -220,13 +234,28 @@ const ListMigrationJobs = () => {
         {
           allScheduledJobs.map((job) =>
           <tr key={job._id.toString()}>
-            <td>{job._id.toString()} <br/> <br/>{job.replicationId}</td>
+            <td><strong>uuid: </strong>{job._id.toString()} <br/> <br/><strong>MigrationUnit:</strong> ({job.replicationId}, {job.migrationJobId}, {job.migrationJobIdType})</td>
             <td>{job.type} <br/> {job.isRollback ? "rollback" : "migrate"} <br/> {job.migrationJobIdType}</td>
             <td>{new Date(job.scheduledTime).toLocaleString()}</td>
             <td>{job.startedAt ? new Date(job.startedAt).toLocaleString() : ""}</td>
             <td>{job.finishedAt ? new Date(job.finishedAt).toLocaleString() : ""}</td>
             <td><p style={styleState(job.state)}>{job.state}</p>{`${jobToRunningInMinutes(job.startedAt, job.finishedAt)}`}</td>
             <td>{getButtons(job)}</td>
+          </tr>
+          )
+        }
+        {
+          allUnscheduledJobs.map(([rid, mid, mtype, t]) =>
+          <tr key={`${rid},${mid}`}>
+            <td><strong>uuid: </strong>{""} <br/> <br/><strong>MigrationUnit:</strong> ({rid}, {mid}, {mtype})</td>
+            <td>{t} <br/> {""} <br/> {mtype}</td>
+            <td>{""}</td>
+            <td>{""}</td>
+            <td>{""}</td>
+            <td><p>Not Yet Scheduled</p></td>
+            <td>{<div>
+              <button onClick={() => submitMigrationJob(rid, mid, mtype, t, false, new Date().getTime())}>Submit</button>
+            </div>}</td>
           </tr>
           )
         }

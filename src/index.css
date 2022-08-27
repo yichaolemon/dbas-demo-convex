@@ -3,6 +3,8 @@
 main {
   width: min(800px, 95vw);
   margin: 0 auto;
+  margin-bottom: 50px;
+  margin-top: 25px;
 }
 
 .list-group-item:hover {

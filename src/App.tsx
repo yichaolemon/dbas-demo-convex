@@ -19,8 +19,6 @@ const SubmitMigration = () => {
   const [migrationJobId, setMigrationJobId] = useState(selectedInfo.migration_job_ids[0]);
 
   async function submitSelectedJob() {
-    // Execute the Convex function `incrementCounter` as a mutation
-    // that updates the counter value.
     let time = +scheduledTime;
     if (scheduledTime.length === 0) {
       time = new Date().getTime();
@@ -71,7 +69,7 @@ const SubmitMigration = () => {
       </p>
       <p><strong>Rollback: </strong><input type="checkbox" checked={isRollback} onChange={(e) => setIsRollback(e.target.checked)} /></p>
       <p>Scheduled time (millis since epoch) <input type="text" placeholder="leave blank to run now" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} /></p>
-      <button onClick={submitSelectedJob}>Submit Job!</button><p>Job just submitted: {submittedJobUuid}</p>
+      <button onClick={submitSelectedJob}>Submit Job!</button><p>Job just submitted: <text style={{color: "red"}}>{submittedJobUuid}</text></p>
     </div>
   );
 };
@@ -79,7 +77,7 @@ const SubmitMigration = () => {
 const SearchResult = ({jobUuid}: {jobUuid: string}) => {
   const migrationJobById = useQuery('getMigrationJobById', new Id("migration_jobs", jobUuid));
   return (
-    <textarea value={JSON.stringify(migrationJobById, null, 2)} />
+    <textarea value={JSON.stringify(migrationJobById, null, 4)} />
   )
 }
 
@@ -173,7 +171,7 @@ const ListMigrationJobs = () => {
       <p>
         <strong>Replication Id:&nbsp;</strong>
         <Select
-          defaultValue={{value: replicationId, label: replicationId}}
+          value={{value: replicationId, label: replicationId}}
           options={[{ value: "ALL", label: "ALL" }]
             .concat(replicationInfo.map((info) => {
               return { value: info.id, label: info.id }
@@ -184,7 +182,6 @@ const ListMigrationJobs = () => {
             }
             setReplicationId(newValue.value)
             setMigrationJobId("ALL")
-            // setMigrationJobId(replicationInfo.filter((info) => info.id === newValue.value)[0].migration_job_ids[0])
           }}
         />
       </p>
@@ -212,7 +209,6 @@ const ListMigrationJobs = () => {
         <tr>
           <th>ID</th>
           <th>Type</th>
-          {/* <th>migration job id</th> */}
           <th>Ready At</th>
           <th>Started At</th>
           <th>Finished At</th>
@@ -226,7 +222,6 @@ const ListMigrationJobs = () => {
           <tr key={job._id.toString()}>
             <td>{job._id.toString()} <br/> <br/>{job.replicationId}</td>
             <td>{job.type} <br/> {job.isRollback ? "rollback" : "migrate"} <br/> {job.migrationJobIdType}</td>
-            {/* <td>{job.migrationJobId}</td> */}
             <td>{new Date(job.scheduledTime).toLocaleString()}</td>
             <td>{job.startedAt ? new Date(job.startedAt).toLocaleString() : ""}</td>
             <td>{job.finishedAt ? new Date(job.finishedAt).toLocaleString() : ""}</td>
@@ -263,7 +258,6 @@ const MockRunMigrationJobs = () => {
 }
 
 export default function App() {
-
   return (
     <main>
       <SubmitMigration />

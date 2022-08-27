@@ -81,7 +81,7 @@ const SearchResult = ({jobUuid}: {jobUuid: string}) => {
   )
 }
 
-const SearchMigrationJobs = () => {
+const SearchMigrationJob = () => {
   const [jobUuid, setJobUuid] = useState("");
   const [searchedJobUuid, setSearchedJobUuid] = useState("");
 
@@ -114,6 +114,12 @@ const ListMigrationJobs = () => {
   for (let rinfo of replicationInfo) {
     for (let mid of rinfo.migration_job_ids ) {
       if (allIds === undefined) {
+        continue
+      }
+      if (replicationId !== "ALL" && replicationId !== rinfo.id) {
+        continue
+      }
+      if (migrationJobId !== "ALL" && migrationJobId !== mid) {
         continue
       }
       if (allIds?.filter(([r_id, m_id]) => r_id === rinfo.id && m_id === mid).length === 0) {
@@ -293,7 +299,7 @@ export default function App() {
       <br/>
       <MockRunMigrationJobs />
       <br/>
-      <SearchMigrationJobs />
+      <SearchMigrationJob />
       <br/>
       <ListMigrationJobs />
     </main>

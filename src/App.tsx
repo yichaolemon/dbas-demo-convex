@@ -107,7 +107,12 @@ const ListMigrationJobs = () => {
   const [migrationJobId, setMigrationJobId] = useState("ALL");
 
   const allScheduledJobs = useQuery('getMigrationJobs', replicationId, migrationJobId);
+  const [sortedJobs, setSortedJobs] = useState(allScheduledJobs);
   const allIds = allScheduledJobs?.map((doc) => [doc.replicationId, doc.migrationJobId]);
+
+  useEffect(() => {
+    setSortedJobs(allScheduledJobs)
+  }, [allScheduledJobs]);
 
   // id, type, state=not yet running, action: submit
   const allUnscheduledJobs = [];
@@ -156,7 +161,7 @@ const ListMigrationJobs = () => {
     }
   }
 
-  if (!allScheduledJobs) {
+  if (!allScheduledJobs || !sortedJobs) {
     return null;
   }
 
@@ -183,7 +188,44 @@ const ListMigrationJobs = () => {
         return <div></div>
       }
     }
-  }
+  };
+
+  const sortTable = (by: string) => {
+    switch (by) {
+      case "finishedAt": allScheduledJobs.sort((a, b) => {
+        if (a.finishedAt === null) {
+          return 1
+        }
+        if (b.finishedAt === null) {
+          return -1
+        }
+        return a.finishedAt - b.finishedAt
+      });
+      break;
+      case "readyAt": allScheduledJobs.sort((a, b) => {
+        if (a.scheduledTime === null) {
+          return 1
+        }
+        if (b.scheduledTime === null) {
+          return -1
+        }
+        return a.scheduledTime - b.scheduledTime
+      });
+      break;
+      case "startedAt": allScheduledJobs.sort((a, b) => {
+        if (a.startedAt === null) {
+          return 1
+        }
+        if (b.startedAt === null) {
+          return -1
+        }
+        return a.startedAt - b.startedAt
+      });
+      break;
+    }
+
+    setSortedJobs(allScheduledJobs);
+  };
 
   return (
     <div>
@@ -225,20 +267,20 @@ const ListMigrationJobs = () => {
         />
       </p>
       <table>
-        <thead>
+        {/* <thead> */}
         <tr>
           <th>ID</th>
           <th>Type</th>
-          <th>Ready At</th>
-          <th>Started At</th>
-          <th>Finished At</th>
+          <th onClick={() => sortTable("readyAt")}>Ready At</th>
+          <th onClick={() => sortTable("startedAt")}>Started At</th>
+          <th onClick={() => sortTable("finishedAt")}>Finished At</th>
           <th>State</th>
           <th>Action</th>
         </tr>
-        </thead>
+        {/* </thead> */}
         <tbody>
         {
-          allScheduledJobs.map((job) =>
+          sortedJobs.map((job) =>
           <tr key={job._id.toString()}>
             <td><strong>uuid: </strong>{job._id.toString()} <br/> <br/><strong>MigrationUnit:</strong> ({job.replicationId}, {job.migrationJobId}, {job.migrationJobIdType})</td>
             <td>{job.type} <br/> {job.isRollback ? "rollback" : "migrate"} <br/> {job.migrationJobIdType}</td>

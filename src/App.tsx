@@ -271,9 +271,18 @@ const ListMigrationJobs = () => {
         <tr>
           <th>ID</th>
           <th>Type</th>
-          <th onClick={() => sortTable("readyAt")}>Ready At</th>
-          <th onClick={() => sortTable("startedAt")}>Started At</th>
-          <th onClick={() => sortTable("finishedAt")}>Finished At</th>
+          <th>
+            Ready At
+            <button className="sortableHeader" onClick={() => sortTable("readyAt")} >↓</button>
+          </th>
+          <th>
+            Started At &nbsp;
+            <button className="sortableHeader" onClick={() => sortTable("startedAt")} >↓</button>
+          </th>
+          <th>
+            Finished At &nbsp;
+            <button className="sortableHeader" onClick={() => sortTable("finishedAt")} >↓</button>
+          </th>
           <th>State</th>
           <th>Action</th>
         </tr>

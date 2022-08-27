@@ -30,10 +30,37 @@ main {
   flex-grow: 1;
 }
 
-th, td {
+td {
   border: 0.5px solid gray;
   padding: 0.5em;
   line-height: 20px;
+}
+
+th {
+  border: 0.5px solid gray;
+  background-color: white;
+  padding: 0.5em;
+  line-height: 20px;
+  position: sticky;
+  top: 0;
+}
+
+table {
+  position: relative;
+}
+
+.sortableHeader:focus {
+  background-color: bisque;
+}
+
+.sortableHeader:hover {
+  background-color: bisque;
+}
+
+.sortableHeader {
+  background-color: white;
+  font-size: 10px;
+  text-align: center;
 }
 
 textarea {

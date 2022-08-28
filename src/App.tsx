@@ -224,7 +224,8 @@ const ListMigrationJobs = () => {
       break;
     }
 
-    setSortedJobs(allScheduledJobs);
+    // needs to copy to make it rerender, otherwise same pointer
+    setSortedJobs(sortedJobs.slice());
   };
 
   return (

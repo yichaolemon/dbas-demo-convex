@@ -192,7 +192,7 @@ const ListMigrationJobs = () => {
 
   const sortTable = (by: string) => {
     switch (by) {
-      case "finishedAt": allScheduledJobs.sort((a, b) => {
+      case "finishedAt": sortedJobs.sort((a, b) => {
         if (a.finishedAt === null) {
           return 1
         }
@@ -202,7 +202,7 @@ const ListMigrationJobs = () => {
         return a.finishedAt - b.finishedAt
       });
       break;
-      case "readyAt": allScheduledJobs.sort((a, b) => {
+      case "readyAt": sortedJobs.sort((a, b) => {
         if (a.scheduledTime === null) {
           return 1
         }
@@ -212,7 +212,7 @@ const ListMigrationJobs = () => {
         return a.scheduledTime - b.scheduledTime
       });
       break;
-      case "startedAt": allScheduledJobs.sort((a, b) => {
+      case "startedAt": sortedJobs.sort((a, b) => {
         if (a.startedAt === null) {
           return 1
         }

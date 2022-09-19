@@ -5,74 +5,100 @@ import startRunningJob from "../convex/startRunningJob";
 import { Id, Document } from "../convex/_generated/dataModel";
 import React from 'react'
 import Select from 'react-select'
+import useCollapse from 'react-collapsed';
 
-
-const SubmitMigration = () => {
-  const submitMigrationJob = useMutation("submitMigrationJob");
-  const [submittedJobUuid, setSubmittedJobUuid] = useState("");
-
-  const [replicationId, setReplicationId] = useState(replicationInfo[0].id);
-  const [isRollback, setIsRollback] = useState(false);
-  const [scheduledTime, setScheduledTime] = useState("");
-
-  const selectedInfo = replicationInfo.filter((info) => info.id === replicationId)[0];
-  const [migrationJobId, setMigrationJobId] = useState(selectedInfo.migration_job_ids[0]);
-
-  async function submitSelectedJob() {
-    let time = +scheduledTime;
-    if (scheduledTime.length === 0) {
-      time = new Date().getTime();
-    }
-    let id = await submitMigrationJob(replicationId, migrationJobId, selectedInfo.migrationUnit,
-      selectedInfo.type, isRollback, time);
-
-    setSubmittedJobUuid(id.toString());
-  }
-
+const Collapsible = (props:any) => {
+  const { getCollapseProps, getToggleProps, isExpanded } = useCollapse();
   return (
-    <div>
-      <h3 style={{color: "#72bcd4"}}>Submit your migration jobs:</h3>
-      <p><strong>Logical DB</strong>: {selectedInfo.localDbName}</p>
-      <p><strong>Source Host</strong>: {selectedInfo.sourceId} <strong>Target Host</strong>: {selectedInfo.targetId}</p>
-      <p><strong>Migration Type</strong>: {selectedInfo.type} <strong>Unit</strong>: {selectedInfo.migrationUnit}</p>
-      <p>
-        <strong>Replication Id:&nbsp;</strong>
-        <Select
-          defaultValue={{value: replicationId, label: replicationId}}
-          options={replicationInfo.map((info) => {
-            return { value: info.id, label: info.id }
-          })}
-          onChange={(newValue, _) => {
-            if (newValue === null) {
-              return
-            }
-            setMigrationJobId(replicationInfo.filter((info) => info.id === newValue.value)[0].migration_job_ids[0])
-            setReplicationId(newValue.value)
-          }}
-        />
-      </p>
-      <p>
-        <strong>Migration job id:&nbsp;</strong>
-        <Select
-          // defaultValue={{value: migrationJobId, label: migrationJobId}}
-          value={{value: migrationJobId, label: migrationJobId}}
-          options={selectedInfo.migration_job_ids.map((id) => {
-            return {value: id, label: id}
-          })}
-          onChange={(newValue, _) => {
-            if (newValue === null) {
-              return
-            }
-            setMigrationJobId(newValue.value)
-          }}
-        />
-      </p>
-      <p><strong>Rollback: </strong><input type="checkbox" checked={isRollback} onChange={(e) => setIsRollback(e.target.checked)} /></p>
-      <p>Scheduled time (millis since epoch) <input type="text" placeholder="leave blank to run now" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} /></p>
-      <button onClick={submitSelectedJob}>Submit Job!</button><p>Job just submitted: <text style={{color: "red"}}>{submittedJobUuid}</text></p>
+    <div className="collapsible">
+      <div className="header" {...getToggleProps()}>
+        <strong>Runs</strong>
+      </div>
+      <div {...getCollapseProps()}>
+        <div className="content">
+          uuid: {props.job._id.toString()}, started_at: {props.job.startedAt}, finished_at: {props.job.finishedAt}
+        </div>
+      </div>
     </div>
   );
-};
+}
+
+const MigrationUnit = (props: any) => {
+  return (
+    <div>
+      <td>{props.id}, {props.unit}</td>
+      <td>Not Started</td>
+    </div>
+  )
+}
+
+// const SubmitMigration = () => {
+//   const submitMigrationJob = useMutation("submitMigrationJob");
+//   const [submittedJobUuid, setSubmittedJobUuid] = useState("");
+
+//   const [replicationId, setReplicationId] = useState(replicationInfo[0].id);
+//   const [isRollback, setIsRollback] = useState(false);
+//   const [scheduledTime, setScheduledTime] = useState("");
+
+//   const selectedInfo = replicationInfo.filter((info) => info.id === replicationId)[0];
+//   const [migrationJobId, setMigrationJobId] = useState("");
+//   const { getCollapseProps, getToggleProps, isExpanded } = useCollapse();
+
+//   async function submitSelectedJob() {
+//     let time = +scheduledTime;
+//     if (scheduledTime.length === 0) {
+//       time = new Date().getTime();
+//     }
+//     let id = await submitMigrationJob(replicationId, migrationJobId, "",
+//       selectedInfo.type, isRollback, time);
+
+//     setSubmittedJobUuid(id.toString());
+//   }
+
+//   return (
+//     <div>
+//       <h3 style={{color: "#72bcd4"}}>Submit your migration jobs:</h3>
+//       <p><strong>Logical DB</strong>: {selectedInfo.logicalDbName}</p>
+//       <p><strong>Source Host</strong>: {selectedInfo.sourceId} <strong>Target Host</strong>: {selectedInfo.targetId}</p>
+//       <p><strong>Migration Type</strong>: {selectedInfo.type}</p>
+//       <p>
+//         <strong>Replication Id:&nbsp;</strong>
+//         <Select
+//           defaultValue={{value: replicationId, label: replicationId}}
+//           options={replicationInfo.map((info) => {
+//             return { value: info.id, label: info.id }
+//           })}
+//           onChange={(newValue, _) => {
+//             if (newValue === null) {
+//               return
+//             }
+//             setMigrationJobId(replicationInfo.filter((info) => info.id === newValue.value)[0].migration_job_ids[0])
+//             setReplicationId(newValue.value)
+//           }}
+//         />
+//       </p>
+//       <p>
+//         <strong>Migration job id:&nbsp;</strong>
+//         <Select
+//           // defaultValue={{value: migrationJobId, label: migrationJobId}}
+//           value={{value: migrationJobId, label: migrationJobId}}
+//           options={selectedInfo.migration_job_ids.map((id) => {
+//             return {value: id, label: id}
+//           })}
+//           onChange={(newValue, _) => {
+//             if (newValue === null) {
+//               return
+//             }
+//             setMigrationJobId(newValue.value)
+//           }}
+//         />
+//       </p>
+//       <p><strong>Rollback: </strong><input type="checkbox" checked={isRollback} onChange={(e) => setIsRollback(e.target.checked)} /></p>
+//       <p>Scheduled time (millis since epoch) <input type="text" placeholder="leave blank to run now" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} /></p>
+//       <button onClick={submitSelectedJob}>Submit Job!</button><p>Job just submitted: <text style={{color: "red"}}>{submittedJobUuid}</text></p>
+//     </div>
+//   );
+// };
 
 const SearchResult = ({jobUuid}: {jobUuid: string}) => {
   const migrationJobById = useQuery('getMigrationJobById', new Id("migration_jobs", jobUuid));
@@ -106,6 +132,7 @@ const ListMigrationJobs = () => {
   const selectedInfo = (replicationId === "ALL") ? null : replicationInfo.filter((info) => info.id === replicationId)[0];
   const [migrationJobId, setMigrationJobId] = useState("ALL");
 
+  //TODO: this is dumb
   const allScheduledJobs = useQuery('getMigrationJobs', replicationId, migrationJobId);
   const [sortedJobs, setSortedJobs] = useState(allScheduledJobs);
   const allIds = allScheduledJobs?.map((doc) => [doc.replicationId, doc.migrationJobId]);
@@ -114,10 +141,41 @@ const ListMigrationJobs = () => {
     setSortedJobs(allScheduledJobs)
   }, [allScheduledJobs]);
 
-  // id, type, state=not yet running, action: submit
+  const allJobs = [];
+  for (let rinfo of replicationInfo) {
+    if (replicationId !== "ALL" && replicationId !== rinfo.id) {
+      continue
+    }
+    for (let mid of rinfo.migrationInfo.workspaces ) {
+      allJobs.push([rinfo.id, mid, "workspace", rinfo.type])
+    }
+    for (let mid of [...Array(rinfo.migrationInfo.buckets).keys()]) {
+      allJobs.push([rinfo.id, mid, "bucket", rinfo.type])
+    }
+  }
+
+  const getScheduledJobs = (mid: any) => {
+    return (
+      <tr key={mid}>
+        {
+          allScheduledJobs?.filter((job) => job.migrationJobId === mid)
+            .map((job) =>
+              (
+              <div>
+              <td>uuid: {job._id.toString()}</td>
+              <td>started_at: {job.startedAt ? new Date(job.startedAt).toLocaleString() : ""}</td>
+              <td>finished_at: {job.finishedAt ? new Date(job.finishedAt).toLocaleString() : ""}</td>
+              </div>
+            )
+          )
+        }
+      </tr>
+    )
+  }
+
   const allUnscheduledJobs = [];
   for (let rinfo of replicationInfo) {
-    for (let mid of rinfo.migration_job_ids ) {
+    for (let mid of rinfo.migrationInfo.workspaces ) {
       if (allIds === undefined) {
         continue
       }
@@ -128,7 +186,7 @@ const ListMigrationJobs = () => {
         continue
       }
       if (allIds?.filter(([r_id, m_id]) => r_id === rinfo.id && m_id === mid).length === 0) {
-        allUnscheduledJobs.push([rinfo.id, mid, rinfo.migrationUnit, rinfo.type])
+        allUnscheduledJobs.push([rinfo.id, mid, "", rinfo.type])
       }
     }
   }
@@ -152,7 +210,7 @@ const ListMigrationJobs = () => {
 
   const styleState = (state: string) => {
     switch (state) {
-      case "Cancelled":
+      case "Cancelled": return { background: "#ffd24d" }
       case "Scheduled": return { background: "#8f9c99" }
       case "Failed": return { background: "#d4442a" }
       case "Succeeded": return { background: "#30b027" }
@@ -170,12 +228,17 @@ const ListMigrationJobs = () => {
       case "Running": {
         return <div></div>
       }
+      case "Cancelled":
       case "Failed": {
         return <div>
           <button onClick={() =>
             submitMigrationJob(job.replicationId, job.migrationJobId, job.migrationJobIdType, job.type,
-              job.isRollback, new Date().getTime())}
-          >Resubmit</button>
+              false, new Date().getTime())}
+          >Migrate</button>
+          <button onClick={() =>
+            submitMigrationJob(job.replicationId, job.migrationJobId, job.migrationJobIdType, job.type,
+              true, new Date().getTime())}
+          >Rollback</button>
         </div>
       }
       case "Scheduled": {
@@ -228,9 +291,42 @@ const ListMigrationJobs = () => {
     setSortedJobs(sortedJobs.slice());
   };
 
+  const jobsRows = (rid: any, mid: any, mtype: any, t: any) => {
+    const filtered = allScheduledJobs?.filter((job) => job.migrationJobId === mid)
+    .sort((a, b) => {
+      if (!a.startedAt) {
+        return -1
+      }
+      if (!b.startedAt) {
+        return 1
+      }
+      return a.startedAt - b.startedAt
+    });
+    if (!filtered || filtered.length === 0) {
+      return <tr>
+        <td>{(replicationId === "ALL") ? rid : ""} <br /> {mtype.toString().toUpperCase()}, {mid}</td>
+        {/* <td><button onClick={() => submitMigrationJob(rid, mid, mtype, t, false, new Date().getTime())}>Submit</button></td> */}
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><button onClick={() => submitMigrationJob(rid, mid, mtype, t, false, new Date().getTime())}>Migrate</button></td>
+      </tr>;
+    }
+    return filtered
+      .map((job, i, filtered) =>
+      (<tr>
+        {(i === 0) ? <td rowSpan={filtered.length}>{(replicationId === "ALL") ? rid : ""} <br /> {mtype.toString().toUpperCase()}, {mid}</td> : null}
+        <td>{job._id.toString()}<br/><span style={styleState(job.state)}>{`${job.isRollback ? "Rollback" : "Migrate"} ${job.state}`}</span></td>
+        <td>{job.startedAt ? new Date(job.startedAt).toLocaleString() : ""}</td>
+        <td>{job.finishedAt ? new Date(job.finishedAt).toLocaleString() : ""}</td>
+        <td>{getButtons(job)}</td>
+      </tr>
+      ))
+  }
+
   return (
     <div>
-      <h3 style={{color: "#72bcd4"}}>All jobs:</h3>
+      <h3 style={{color: "#72bcd4"}}>All Replication and Migration Units:</h3>
       <p>
         <strong>Replication Id:&nbsp;</strong>
         <Select
@@ -249,75 +345,58 @@ const ListMigrationJobs = () => {
         />
       </p>
       <p>
-        <strong>Migration job id:&nbsp;</strong>
-        <Select
-          // defaultValue={{value: migrationJobId, label: migrationJobId}}
-          value={{value: migrationJobId, label: migrationJobId}}
-          options={
-            (selectedInfo === null) ? [] :
-              [{ value: "ALL", label: "ALL" }].concat(
-                selectedInfo.migration_job_ids.map((id) => {
-                  return { value: id, label: id }
-                }))}
-          onChange={(newValue, _) => {
-            if (newValue === null) {
-              return
-            }
-            setMigrationJobId(newValue.value)
-          }}
-        />
+        <strong>Pipeline Status:&nbsp;</strong><br/>
+        Databse snapshotter: Running, 
+        Binlog ingester: Running,
+        Replicator: Running <br/>
+      </p>
+      <p>
+        <strong>Pipeline Action Workflows:&nbsp;</strong><br/>
+        <p>
+          job id: <input type="text" placeholder="idempotency token"></input>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <button>Create Restored Backup</button>
+        </p>
+        <p>
+          job id: <input type="text" placeholder="idempotency token"></input>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <button>Initialize Dbz Offset</button>
+        </p>
+        <p>
+          job id: <input type="text" placeholder="idempotency token"></input>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <button>Start Snapshotter Backfill</button>
+        </p>
+        <p>
+          job id: <input type="text" placeholder="idempotency token"></input>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <button>Bootstrap Snapshot</button> This runs the above three sequentially
+        </p>
+      </p>
+      <p>
+        <strong>Workflow Jobs:&nbsp;</strong>
+        TODO: add a table here
+      </p>
+      <p>
+        <strong>Migration Units:&nbsp;</strong>
       </p>
       <table>
-        {/* <thead> */}
         <tr>
-          <th>ID</th>
-          <th>Type</th>
-          <th>
-            Ready At
-            <button className="sortableHeader" onClick={() => sortTable("readyAt")} >↓</button>
-          </th>
-          <th>
-            Started At &nbsp;
-            <button className="sortableHeader" onClick={() => sortTable("startedAt")} >↓</button>
-          </th>
-          <th>
-            Finished At &nbsp;
-            <button className="sortableHeader" onClick={() => sortTable("finishedAt")} >↓</button>
-          </th>
-          <th>State</th>
-          <th>Action</th>
+          <th>Migration Unit</th>
+          <th>Run:UUID</th>
+          <th>Run:StartedAt</th>
+          <th>Run:FinishedAt</th>
+          <th>Run:Actions</th>
         </tr>
-        {/* </thead> */}
-        <tbody>
         {
-          sortedJobs.map((job) =>
-          <tr key={job._id.toString()}>
-            <td><strong>uuid: </strong>{job._id.toString()} <br/> <br/><strong>MigrationUnit:</strong> ({job.replicationId}, {job.migrationJobId}, {job.migrationJobIdType})</td>
-            <td>{job.type} <br/> {job.isRollback ? "rollback" : "migrate"} <br/> {job.migrationJobIdType}</td>
-            <td>{new Date(job.scheduledTime).toLocaleString()}</td>
-            <td>{job.startedAt ? new Date(job.startedAt).toLocaleString() : ""}</td>
-            <td>{job.finishedAt ? new Date(job.finishedAt).toLocaleString() : ""}</td>
-            <td><p style={styleState(job.state)}>{job.state}</p>{`${jobToRunningInMinutes(job.startedAt, job.finishedAt)}`}</td>
-            <td>{getButtons(job)}</td>
-          </tr>
+          allJobs.map(([rid, mid, mtype, t]) => 
+            <tbody>
+              {
+                jobsRows(rid, mid, mtype, t)
+              }
+            </tbody>
           )
         }
-        {
-          allUnscheduledJobs.map(([rid, mid, mtype, t]) =>
-          <tr key={`${rid},${mid}`}>
-            <td><strong>uuid: </strong>{""} <br/> <br/><strong>MigrationUnit:</strong> ({rid}, {mid}, {mtype})</td>
-            <td>{t} <br/> {""} <br/> {mtype}</td>
-            <td>{""}</td>
-            <td>{""}</td>
-            <td>{""}</td>
-            <td><p>Not Yet Scheduled</p></td>
-            <td>{<div>
-              <button onClick={() => submitMigrationJob(rid, mid, mtype, t, false, new Date().getTime())}>Submit</button>
-            </div>}</td>
-          </tr>
-          )
-        }
-        </tbody>
       </table>
     </div>
   );
@@ -344,16 +423,17 @@ const MockRunMigrationJobs = () => {
   )
 }
 
+
 export default function App() {
   return (
     <main>
-      <SubmitMigration />
+      {/* <SubmitMigration /> */}
+      {/* <br/> */}
+      <ListMigrationJobs />
       <br/>
       <MockRunMigrationJobs />
       <br/>
       <SearchMigrationJob />
-      <br/>
-      <ListMigrationJobs />
     </main>
   );
 }

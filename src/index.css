@@ -67,3 +67,16 @@ textarea {
   width: 500px;
   height: 300px;
 }
+
+.collapsible .content {
+  padding: 6px;
+  background-color: #eeeeee;
+  border: 0.5px solid gray;
+}
+
+.collapsible .header {
+  background-color: darkgray;
+  padding: 6px;
+  cursor: pointer;
+  border: 0.5px solid gray;
+}

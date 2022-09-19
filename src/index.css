@@ -36,6 +36,10 @@ td {
   line-height: 20px;
 }
 
+td.unit-row {
+  border: 2px solid black;
+}
+
 th {
   border: 0.5px solid gray;
   background-color: darkgray;

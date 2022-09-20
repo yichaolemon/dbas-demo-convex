@@ -36,19 +36,19 @@ export const ListMigrationJobs = () => {
     }
   }
 
-  const migrateButton = (rid, mid, mtype, t) =>
+  const migrateButton = (rid:string, mid:string, mtype:string, t:string) =>
     <button className="submit-rollback-job" onClick={() =>
       submitMigrationJob(rid, mid, mtype, t, false, new Date().getTime())}>
       Migrate
     <span className="tooltiptext">Migrate this unit. The execution will happen asynchronously.</span>
     </button>
-  const rollbackButton = (rid, mid, mtype, t) =>
+  const rollbackButton = (rid:string, mid:string, mtype:string, t:string) =>
     <button className="submit-migrate-job" onClick={() =>
       submitMigrationJob(rid, mid, mtype, t, true, new Date().getTime())}>
       Rollback
     <span className="tooltiptext">Rollback this unit. The execution will happen asynchronously.</span>
     </button>
-  const cancelButton = (id) =>
+  const cancelButton = (id:Id<"migration_jobs">) =>
     <button onClick={() => finishRunningJob(id, "Cancelled")}>
       Cancel
     <span className="tooltiptext">Cancel this scheduled job if the execution hasn't started yet.</span>

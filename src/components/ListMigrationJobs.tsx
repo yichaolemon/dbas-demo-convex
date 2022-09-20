@@ -112,6 +112,11 @@ export const ListMigrationJobs = () => {
           {cancelButton(job._id)}
         </div>
       }
+      case "Succeeded": {
+        return <div>
+          {rollbackButton(job.replicationId, job.migrationJobId, job.migrationJobIdType, job.type)}
+        </div>
+      }
       default: {
         return <div></div>
       }

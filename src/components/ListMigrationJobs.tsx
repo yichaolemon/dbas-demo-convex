@@ -5,6 +5,9 @@ import { Id, Document } from "../../convex/_generated/dataModel";
 import React from 'react'
 import Select from 'react-select'
 import useCollapse from 'react-collapsed';
+import { toast, TypeOptions } from "react-toastify";
+import "react-toastify/ReactToastify.min.css";
+
 
 export const ListMigrationJobs = () => {
   const submitMigrationJob = useMutation("submitMigrationJob");
@@ -37,19 +40,29 @@ export const ListMigrationJobs = () => {
   }
 
   const migrateButton = (rid:string, mid:string, mtype:string, t:string) =>
-    <button className="submit-rollback-job" onClick={() =>
-      submitMigrationJob(rid, mid, mtype, t, false, new Date().getTime())}>
+    <button className="submit-rollback-job" onClick={() => {
+      const idPromise = submitMigrationJob(rid, mid, mtype, t, false, new Date().getTime())
+      idPromise.then((id) => toast(`Successfully queued up migrate job with UUID: ${id}`))
+      .catch((error) => toast(`Request failed: ${error}`))
+    }}>
       Migrate
     <span className="tooltiptext">Migrate this unit. The execution will happen asynchronously.</span>
     </button>
   const rollbackButton = (rid:string, mid:string, mtype:string, t:string) =>
-    <button className="submit-migrate-job" onClick={() =>
-      submitMigrationJob(rid, mid, mtype, t, true, new Date().getTime())}>
+    <button className="submit-migrate-job" onClick={() => {
+      const idPromise = submitMigrationJob(rid, mid, mtype, t, true, new Date().getTime())
+      idPromise.then((id) => toast(`Successfully queued up rollback job with UUID: ${id}`))
+      .catch((error) => toast(`Request failed: ${error}`))
+    }}>
       Rollback
     <span className="tooltiptext">Rollback this unit. The execution will happen asynchronously.</span>
     </button>
   const cancelButton = (id:Id<"migration_jobs">) =>
-    <button onClick={() => finishRunningJob(id, "Cancelled")}>
+    <button onClick={() => {
+      const emptyPromise = finishRunningJob(id, "Cancelled")
+      emptyPromise.then((_) => toast(`Successfully cancled job with UUID: ${id.id}`))
+      .catch((error) => toast(`Request failed: ${error}`))
+    }}>
       Cancel
     <span className="tooltiptext">Cancel this scheduled job if the execution hasn't started yet.</span>
     </button>
@@ -95,36 +108,8 @@ export const ListMigrationJobs = () => {
     return null;
   }
 
-  const getButtons = (job: Document<"migration_jobs">) => {
-    switch (job.state) {
-      case "Running": {
-        return <div></div>
-      }
-      case "Cancelled":
-      case "Failed": {
-        return <div>
-          {rollbackButton(job.replicationId, job.migrationJobId, job.migrationJobIdType, job.type)}
-          {migrateButton(job.replicationId, job.migrationJobId, job.migrationJobIdType, job.type)}
-        </div>
-      }
-      case "Scheduled": {
-        return <div>
-          {cancelButton(job._id)}
-        </div>
-      }
-      case "Succeeded": {
-        return <div>
-          {rollbackButton(job.replicationId, job.migrationJobId, job.migrationJobIdType, job.type)}
-        </div>
-      }
-      default: {
-        return <div></div>
-      }
-    }
-  };
-
   const jobsRows = (rid: any, mid: any, mtype: any, t: any) => {
-    const filtered = allScheduledJobs?.filter((job) => job.migrationJobId === mid)
+    const filtered = allScheduledJobs?.filter((job) => job.migrationJobId === mid && job.replicationId === rid)
     .sort((a, b) => {
       if (!a.startedAt) {
         return -1
@@ -137,22 +122,22 @@ export const ListMigrationJobs = () => {
     if (!filtered || filtered.length === 0) {
       return <tr>
         <td className="unit-row">{(replicationId === "ALL") ? rid : ""} {mtype.toString().toUpperCase()}, {mid}</td>
+        <td>{migrateButton(rid, mid, mtype, t)} {rollbackButton(rid, mid, mtype, t)}</td>
         <td></td>
         <td></td>
         <td></td>
-        <td>
-          {migrateButton(rid, mid, mtype, t)}
-        </td>
+        <td></td>
       </tr>;
     }
     return filtered
       .map((job, i, filtered) =>
       (<tr>
         {(i === 0) ? <td className="unit-row" rowSpan={filtered.length}>{(replicationId === "ALL") ? rid : ""} <br /> {mtype.toString().toUpperCase()}, {mid}</td> : null}
-        <td>{job._id.toString()}<br/><span style={styleState(job.state)}>{`${job.isRollback ? "Rollback" : "Migrate"} ${job.state}`}</span></td>
+        {(i === 0) ? <td rowSpan={filtered.length}>{migrateButton(rid, mid, mtype, t)} {rollbackButton(rid, mid, mtype, t)}</td> : null}
+        <td>{job._id.toString()}<br/><span className="job-state" style={styleState(job.state)}>{`${job.isRollback ? "Rollback" : "Migrate"} ${job.state}`}</span></td>
         <td>{job.startedAt ? new Date(job.startedAt).toLocaleString() : ""}</td>
         <td>{job.finishedAt ? new Date(job.finishedAt).toLocaleString() : ""}</td>
-        <td>{getButtons(job)}</td>
+        <td>{job.state === "Scheduled" ? cancelButton(job._id) : <></>}</td>
       </tr>
       ))
   };
@@ -163,6 +148,7 @@ export const ListMigrationJobs = () => {
       <p>
         <strong>Replication Id:&nbsp;</strong>
         <Select
+          className="replication-id-dropdown"
           value={{value: replicationId, label: replicationId}}
           options={[{ value: "ALL", label: "ALL" }]
             .concat(replicationInfo.map((info) => {
@@ -180,6 +166,7 @@ export const ListMigrationJobs = () => {
       <table>
         <tr>
           <th>Migration Unit</th>
+          <th>Actions</th>
           <th>Run:UUID</th>
           <th>Run:StartedAt</th>
           <th>Run:FinishedAt</th>

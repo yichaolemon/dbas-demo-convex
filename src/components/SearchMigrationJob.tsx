@@ -21,6 +21,7 @@ export const SearchMigrationJob = () => {
       uuid: <input type="text" placeholder="UUID of a job to search" value={jobUuid} onChange={(e) => setJobUuid(e.target.value)}></input>
       &nbsp;&nbsp;&nbsp;&nbsp;
       <button onClick={() => setSearchedJobUuid(jobUuid)}>Search!</button>
+      <br/>
       {searchedJobUuid ? <SearchResult jobUuid={searchedJobUuid}/> : null}
       </p>
     </div>

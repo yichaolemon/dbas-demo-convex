@@ -1,10 +1,65 @@
 @import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 
 main {
-  width: min(800px, 95vw);
+  width: min(1000px, 95vw);
   margin: 0 auto;
   margin-bottom: 50px;
   margin-top: 25px;
+}
+
+button {
+  background-color:rgb(34, 114, 180);
+  color: white;
+  border-color: transparent;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  margin-left: 2px;
+  margin-right: 2px;
+  position: relative;
+  display: inline-block;
+}
+
+button .tooltiptext {
+  visibility: hidden;
+  width: 200px;
+  background-color: rgb(56, 53, 53);
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -100px;
+}
+
+button:hover .tooltiptext {
+  visibility: visible;
+}
+
+button:hover .tooltiptext {
+  visibility: visible;
+}
+
+button .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+button:hover {
+  background-color:rgb(34, 114, 180, 0.7);
+  color: white;
+}
+
+button.submit-rollback-job:hover {
+
 }
 
 .list-group-item:hover {

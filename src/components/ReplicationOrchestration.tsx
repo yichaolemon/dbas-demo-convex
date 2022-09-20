@@ -1,20 +1,29 @@
-
+import { useEffect, useState } from "react";
 
 export const ReplicationOrchestration = () => {
+  const [snapshotterState, setSnapshotterState] = useState("")
+  const [binlogIngesterState, setBinlogIngesterState] = useState("")
+  const [replicatorState, setReplicatorState] = useState("")
+
   return (
     <div>
-      <h3 style={{color: "#72bcd4"}}>Replication Orchestration: </h3>
+      <h3 style={{ color: "#72bcd4" }}>Replication Orchestration: </h3>
       <p>
-        <strong>Pipeline Status:&nbsp;</strong><br/>
-        Databse snapshotter: Running, 
-        <text style={{color: "red"}}>MOCK at the moment</text><br/>
-        Binlog ingester: Running,
-        <text style={{color: "red"}}>MOCK at the moment</text><br/>
-        Replicator: Running, 
-        <text style={{color: "red"}}>MOCK at the moment</text><br/>
+        <strong>Pipeline Status:&nbsp;</strong><br />
+        Databse snapshotter:&nbsp;&nbsp;<text style={{color: "red"}}>{snapshotterState}</text>
+        &nbsp;&nbsp;
+        <button onClick={() => setSnapshotterState(Math.random() < 0.5 ? "Running!" : "Down!")}>Send a heartbeat</button>
+        <br />
+        Binlog ingester:&nbsp;&nbsp;<text style={{color: "red"}}>{binlogIngesterState}</text>
+        &nbsp;&nbsp;
+        <button onClick={() => setBinlogIngesterState(Math.random() < 0.5 ? "Running!" : "Down!")}>Send a heartbeat</button>
+        <br />
+        Replicator: &nbsp;&nbsp;<text style={{color: "red"}}>{replicatorState}</text>
+        &nbsp;&nbsp;
+        <button onClick={() => setReplicatorState(Math.random() < 0.5 ? "Running!" : "Down!")}>Send a heartbeat</button>
       </p>
       <p>
-        <strong>Pipeline Action Workflows:&nbsp;</strong><br/>
+        <strong>Pipeline Action Workflows:&nbsp;</strong><br />
         <p>
           job id: <input type="text" placeholder="idempotency token"></input>
           &nbsp;&nbsp;&nbsp;&nbsp;

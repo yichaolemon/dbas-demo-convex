@@ -36,24 +36,23 @@ export const ListMigrationJobs = () => {
     }
   }
 
-  const getScheduledJobs = (mid: any) => {
-    return (
-      <tr key={mid}>
-        {
-          allScheduledJobs?.filter((job) => job.migrationJobId === mid)
-            .map((job) =>
-              (
-              <div>
-              <td>uuid: {job._id.toString()}</td>
-              <td>started_at: {job.startedAt ? new Date(job.startedAt).toLocaleString() : ""}</td>
-              <td>finished_at: {job.finishedAt ? new Date(job.finishedAt).toLocaleString() : ""}</td>
-              </div>
-            )
-          )
-        }
-      </tr>
-    )
-  }
+  const migrateButton = (rid, mid, mtype, t) =>
+    <button className="submit-rollback-job" onClick={() =>
+      submitMigrationJob(rid, mid, mtype, t, false, new Date().getTime())}>
+      Migrate
+    <span className="tooltiptext">Migrate this unit. The execution will happen asynchronously.</span>
+    </button>
+  const rollbackButton = (rid, mid, mtype, t) =>
+    <button className="submit-migrate-job" onClick={() =>
+      submitMigrationJob(rid, mid, mtype, t, true, new Date().getTime())}>
+      Rollback
+    <span className="tooltiptext">Rollback this unit. The execution will happen asynchronously.</span>
+    </button>
+  const cancelButton = (id) =>
+    <button onClick={() => finishRunningJob(id, "Cancelled")}>
+      Cancel
+    <span className="tooltiptext">Cancel this scheduled job if the execution hasn't started yet.</span>
+    </button>
 
   const allUnscheduledJobs = [];
   for (let rinfo of replicationInfo) {
@@ -74,15 +73,6 @@ export const ListMigrationJobs = () => {
   }
 
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
-
-  const jobToRunningInMinutes = (startedAt: number|null, finishedAt: number|null): string => {
-    if (startedAt == null) {
-      return ""
-    }
-    const later = finishedAt == null ? currentTime : finishedAt
-    const date = new Date(later - startedAt)
-    return date.toISOString().substring(11, 19)
-  }
 
   useEffect(() => {
     setTimeout(() => {
@@ -113,64 +103,19 @@ export const ListMigrationJobs = () => {
       case "Cancelled":
       case "Failed": {
         return <div>
-          <button onClick={() =>
-            submitMigrationJob(job.replicationId, job.migrationJobId, job.migrationJobIdType, job.type,
-              false, new Date().getTime())}
-          >Migrate</button>
-          <button onClick={() =>
-            submitMigrationJob(job.replicationId, job.migrationJobId, job.migrationJobIdType, job.type,
-              true, new Date().getTime())}
-          >Rollback</button>
+          {rollbackButton(job.replicationId, job.migrationJobId, job.migrationJobIdType, job.type)}
+          {migrateButton(job.replicationId, job.migrationJobId, job.migrationJobIdType, job.type)}
         </div>
       }
       case "Scheduled": {
         return <div>
-          <button onClick={() =>
-            finishRunningJob(job._id, "Cancelled")}>Cancel</button>
+          {cancelButton(job._id)}
         </div>
       }
       default: {
         return <div></div>
       }
     }
-  };
-
-  const sortTable = (by: string) => {
-    switch (by) {
-      case "finishedAt": sortedJobs.sort((a, b) => {
-        if (a.finishedAt === null) {
-          return 1
-        }
-        if (b.finishedAt === null) {
-          return -1
-        }
-        return a.finishedAt - b.finishedAt
-      });
-      break;
-      case "readyAt": sortedJobs.sort((a, b) => {
-        if (a.scheduledTime === null) {
-          return 1
-        }
-        if (b.scheduledTime === null) {
-          return -1
-        }
-        return a.scheduledTime - b.scheduledTime
-      });
-      break;
-      case "startedAt": sortedJobs.sort((a, b) => {
-        if (a.startedAt === null) {
-          return 1
-        }
-        if (b.startedAt === null) {
-          return -1
-        }
-        return a.startedAt - b.startedAt
-      });
-      break;
-    }
-
-    // needs to copy to make it rerender, otherwise same pointer
-    setSortedJobs(sortedJobs.slice());
   };
 
   const jobsRows = (rid: any, mid: any, mtype: any, t: any) => {
@@ -186,12 +131,13 @@ export const ListMigrationJobs = () => {
     });
     if (!filtered || filtered.length === 0) {
       return <tr>
-        <td className="unit-row">{(replicationId === "ALL") ? rid : ""} <br /> {mtype.toString().toUpperCase()}, {mid}</td>
-        {/* <td><button onClick={() => submitMigrationJob(rid, mid, mtype, t, false, new Date().getTime())}>Submit</button></td> */}
+        <td className="unit-row">{(replicationId === "ALL") ? rid : ""} {mtype.toString().toUpperCase()}, {mid}</td>
         <td></td>
         <td></td>
         <td></td>
-        <td><button onClick={() => submitMigrationJob(rid, mid, mtype, t, false, new Date().getTime())}>Migrate</button></td>
+        <td>
+          {migrateButton(rid, mid, mtype, t)}
+        </td>
       </tr>;
     }
     return filtered
@@ -225,9 +171,6 @@ export const ListMigrationJobs = () => {
             setMigrationJobId("ALL")
           }}
         />
-      </p>
-      <p>
-        <strong>Migration Units:&nbsp;</strong>
       </p>
       <table>
         <tr>
